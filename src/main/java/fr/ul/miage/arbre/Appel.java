@@ -34,5 +34,4 @@ public class Appel extends NoeudObj {
 		setValeur(valeur);
 		setFils(new ArrayList<Noeud>());
 	}
-	
 }

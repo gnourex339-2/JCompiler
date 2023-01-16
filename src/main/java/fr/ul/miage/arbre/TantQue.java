@@ -1,5 +1,5 @@
 /*
- *  License and Copyright:
++ *  License and Copyright:
  *  This file is part of arbre project.
  *
  *   It is free software: you can redistribute it and/or modify
