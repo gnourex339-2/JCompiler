@@ -28,6 +28,12 @@ import java.util.ArrayList;
  * Created at 28 févr. 2019
  */
 public class TantQue extends NoeudInt {
+	static int compteur;
+	
+	public TantQue() {
+		this(compteur);
+		compteur++;
+	}
 	//constructeur
 	public TantQue(int valeur) {
 		setValeur(valeur);

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.ul.miage</groupId>
   <artifactId>arbre</artifactId>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
 	<properties>
 		<!-- Le code source en UTF8 -->
 		<project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
@@ -19,9 +19,9 @@
 				<!-- use java 11 -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.12.1</version>
 				<configuration>
-					<release>11</release>
+					<release>17</release>
 				</configuration>
 			</plugin>
 			<plugin>

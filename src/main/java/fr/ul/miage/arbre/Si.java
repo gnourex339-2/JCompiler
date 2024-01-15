@@ -28,7 +28,13 @@ import java.util.ArrayList;
  * Created at 28 févr. 2019
  */
 public class Si extends NoeudInt {
-	//constructeur
+	static int compteur = 0;
+	//constructeurs
+	public Si() {
+		this(compteur);
+		compteur++;
+	}
+	
 	public Si(int valeur) {
 		setValeur(valeur);
 		setCat(Categories.SI);

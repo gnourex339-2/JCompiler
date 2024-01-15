@@ -79,7 +79,7 @@ public class Main {
 			Inferieur inf3 = new Inferieur();
 			inf3.setFilsGauche(idff3);
 			inf3.setFilsDroit(idfff3);
-			TantQue tq3 = new TantQue(0);
+			TantQue tq3 = new TantQue();
 			tq3.setCondition(inf3);
 			tq3.setBloc(bloc3);
 			TxtAfficheur.afficher(tq3);
@@ -98,7 +98,7 @@ public class Main {
 			aff41.setFilsDroit(const41);
 			Bloc bloc4 = new Bloc();
 			bloc4.ajouterUnFils(aff41);
-			Si si4 = new Si(1);
+			Si si4 = new Si();
 			si4.setCondition(inf4);
 			si4.setBlocAlors(bloc4);
 			TxtAfficheur.afficher(si4);
