@@ -29,8 +29,8 @@ public class TxtAfficheur {
 
 	/**
 	 * formatte le Noeud arbre
-	 * @param arbre
-	 * @return
+	 * @param arbre : racine de l'arbre à afficher
+	 * @return String
 	 */
 	public static String formatter(Noeud arbre) {
 		return formatter(arbre, 0);
@@ -46,9 +46,9 @@ public class TxtAfficheur {
 	
 	/**
 	 * méthode récursive
-	 * @param n
-	 * @param niveau
-	 * @return
+	 * @param n : noeud
+	 * @param niveau : indentation
+	 * @return String
 	 */
 	private static String formatter(Noeud n, int niveau) {
 		StringBuffer buf = new StringBuffer();

@@ -27,7 +27,7 @@ package fr.ul.miage.arbre;
  */
 public class Main {
 	/**
-	 * @param args
+	 * @param args : doit être 0 (défaut), 1, 2, 3 ou 4
 	 */
 	public static void main(String[] args) {
 		String n = "0";
@@ -43,6 +43,7 @@ public class Main {
 			prog2.ajouterUnFils(max2);
 			prog2.ajouterUnFils(main2);
 			TxtAfficheur.afficher(prog2);
+			GuiAfficheur.afficher(prog2);
 			break;
 		case "2":
 			// test #2
@@ -64,6 +65,7 @@ public class Main {
 			prog3.ajouterUnFils(max3);
 			prog3.ajouterUnFils(main3);
 			TxtAfficheur.afficher(prog3);
+			GuiAfficheur.afficher(prog3);
 			break;
 		case "3":
 			// test Tant que
@@ -83,6 +85,7 @@ public class Main {
 			tq3.setCondition(inf3);
 			tq3.setBloc(bloc3);
 			TxtAfficheur.afficher(tq3);
+			GuiAfficheur.afficher(tq3);
 			break;
 		case "4":
 			// test Si
@@ -102,6 +105,7 @@ public class Main {
 			si4.setCondition(inf4);
 			si4.setBlocAlors(bloc4);
 			TxtAfficheur.afficher(si4);
+			GuiAfficheur.afficher(si4);
 			break;
 
 		default:

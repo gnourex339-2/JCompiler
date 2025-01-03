@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.ul.miage</groupId>
   <artifactId>arbre</artifactId>
-  <version>0.0.6</version>
+  <version>1.0</version>
 	<properties>
 		<!-- Le code source en UTF8 -->
 		<project.build.sourceEncoding>UTF8</project.build.sourceEncoding>

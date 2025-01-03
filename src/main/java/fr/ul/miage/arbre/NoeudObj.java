@@ -41,7 +41,7 @@ class NoeudObj extends Noeud {
 	 */
 	@Override
 	public String getLabel() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append(getCat());
 		buf.append("/");
 		buf.append(valeur.toString());

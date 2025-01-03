@@ -50,7 +50,7 @@ public abstract class Noeud {
 	//methodes
 	/**
 	 * ajouter un fils à un noeud
-	 * @param f
+	 * @param f : fils
 	 * @return booléen
 	 */
 	public boolean ajouterUnFils(Noeud f) {
@@ -58,7 +58,7 @@ public abstract class Noeud {
 	}
 	/**
 	 * Ajouter une liste de fils
-	 * @param l
+	 * @param l : liste de fils
 	 * @return nombre de fils ajoutés
 	 */
 	public int ajouterDesFils(List<Noeud> l) {
@@ -72,10 +72,10 @@ public abstract class Noeud {
 	}
 	/**
 	 * tester si c'est une feuille
-	 * @return
+	 * @return booléen
 	 */
 	public boolean estFeuille() {
-		if ((fils == null) || (fils.size() == 0)){
+		if ((fils == null) || (fils.isEmpty())){
 			return true;
 		}
 		return false;

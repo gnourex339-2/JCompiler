@@ -1,8 +1,11 @@
-# Bibliothèque Java de Gestion des arbres abstraits
+# Librairie arbre
 
-Ce projet est une librairie qui permet de créer et d'afficher un arbre abstrait.
-Un arbre abstrait est un arbre n-aire qui represente de manière abstraite un code source.
-Cette librairie est utilisée par les étudiant de Licence MIAGE à l'Université de Lorraine.
+## Description
+
+Ce projet contient une librairie de gestion d'arbres n-aire 
+adaptés à la représentation de la structure de données arbre abstrait
+du projet de réalisation d'un compilateur dans le cadre du cours de Compilation
+en Licence MIASHS parcours MIAGE et TAL à l'Université de Lorraine
 
 ## Capture d'écran
 ```
