@@ -1,8 +1,8 @@
-# Librairie arbre
+# Package arbre
 
 ## Description
 
-Ce projet contient une librairie de gestion d'arbres n-aire 
+Ce projet contient un package JAVA de gestion d'arbres n-aire 
 adaptés à la représentation de la structure de données arbre abstrait
 du projet de réalisation d'un compilateur dans le cadre du cours de Compilation
 en Licence MIASHS parcours MIAGE et TAL à l'Université de Lorraine
@@ -67,7 +67,7 @@ Dans un projet Maven, ajouter la dépendance suivante dans le fichier `pom.xml` 
 		<dependency>
 			<groupId>fr.ul.miage</groupId>
 			<artifactId>arbre</artifactId>
-			<version>0.0.5</version>
+			<version>0.0.7</version>
 		</dependency>
 
 ```
