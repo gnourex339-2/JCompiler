@@ -1,3 +1,4 @@
+
 package Miage.JCompiler.TDS;
 
 import Miage.JCompiler.generation.Cat;
@@ -8,7 +9,7 @@ import java.util.Map;
 
 public class Tds {
     // Une table pour les variables (Nom -> Symbole)
-    // Dans une version avancée, on utiliserait une pile de Maps pour gérer les blocs {} imbriqués
+    // Dans une version avancée, on utiliserait une pile de Maps pour gérer les blocs {} imbriqués.
     private Map<String, Symbole> table = new HashMap<>();
     
     // Contexte actuel pour savoir combien de paramètres a la fonction qu'on traite
