@@ -1,5 +1,6 @@
 package Miage.JCompiler.generation;
 
+import Miage.JTDS.Tds;
 import fr.ul.miashs.compil.arbre.*;
 import java.util.List;
 import java.util.HashSet;

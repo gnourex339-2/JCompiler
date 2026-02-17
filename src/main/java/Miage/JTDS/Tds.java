@@ -1,4 +1,7 @@
-package Miage.JCompiler.generation;
+package Miage.JTDS;
+
+import Miage.JCompiler.generation.Cat;
+import Miage.JCompiler.generation.Symbole;
 
 import java.util.HashMap;
 import java.util.Map;
