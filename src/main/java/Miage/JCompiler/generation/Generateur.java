@@ -149,9 +149,11 @@ public class Generateur {
         if (n == null) return rangActuel;
         
         if (n.getCat() == Noeud.Categories.AFF) {
+            // PROTECTION : Vérifier que n.getFils() n'est pas vide
             if (n.getFils() != null && !n.getFils().isEmpty()) {
                 Noeud gauche = n.getFils().get(0);
-                if (gauche.getCat() == Noeud.Categories.IDF) {
+                // PROTECTION : Vérifier que gauche n'est pas null
+                if (gauche != null && gauche.getCat() == Noeud.Categories.IDF) {
                     String nom = ((Idf)gauche).getValeur().toString();
                     if (tds.chercher(nom) == null) {
                         tds.ajouter(nom, Cat.LOCAL, rangActuel);
@@ -161,9 +163,12 @@ public class Generateur {
             }
         }
         
+        // Parcours récursif pour explorer les blocs SI, TANTQUE, etc.
         if (n.getFils() != null) {
             for (Noeud f : n.getFils()) {
-                rangActuel = detecterLocales(f, rangActuel);
+                if (f != null) { // Protection supplémentaire
+                    rangActuel = detecterLocales(f, rangActuel);
+                }
             }
         }
         
@@ -272,29 +277,31 @@ public class Generateur {
     private void collecterGlobales(Noeud n) {
         if (n == null) return;
 
-        // Si on trouve une affectation (AFF)
+        // Protection : on vérifie que c'est une affectation avant de chercher une variable
         if (n.getCat() == Noeud.Categories.AFF) {
-            // Vérifier que getFils() n'est pas null ET n'est pas vide
-            if (n.getFils() != null && !n.getFils().isEmpty() 
-                && n.getFils().get(0).getCat() == Noeud.Categories.IDF) {
-                
-                String nomVar = ((Idf)n.getFils().get(0)).getValeur().toString();
-                
-                // Si pas encore déclarée, on l'écrit dans le code assembleur
-                if (!globalesDeclarees.contains(nomVar)) {
-                    asm.append(nomVar).append(": LONG(0)\n");
-                    globalesDeclarees.add(nomVar);
+            List<Noeud> fils = n.getFils();
+            // On vérifie que la liste existe, n'est pas vide, et que le premier fils n'est pas null
+            if (fils != null && !fils.isEmpty() && fils.get(0) != null) {
+                if (fils.get(0).getCat() == Noeud.Categories.IDF) {
+                    String nomVar = ((Idf)fils.get(0)).getValeur().toString();
                     
-                    // On l'ajoute aussi à la TDS comme GLOBAL
-                    tds.ajouter(nomVar, Cat.GLOBAL, 0); 
+                    if (!globalesDeclarees.contains(nomVar)) {
+                        asm.append(nomVar).append(": LONG(0)\n");
+                        globalesDeclarees.add(nomVar);
+                        tds.ajouter(nomVar, Cat.GLOBAL, 0); 
+                    }
                 }
             }
         }
         
-        // Parcourir récursivement les fils (avec vérification null)
-        if (n.getFils() != null) {
-            for (Noeud fils : n.getFils()) {
-                collecterGlobales(fils);
+        // Parcours récursif sécurisé pour tous les fils (Si, Bloc, etc.)
+        List<Noeud> tousLesFils = n.getFils();
+        if (tousLesFils != null) {
+            for (Noeud fils : tousLesFils) {
+                // C'est ici que l'erreur se produisait : il faut vérifier que 'fils' n'est pas null
+                if (fils != null) {
+                    collecterGlobales(fils);
+                }
             }
         }
     }
@@ -357,6 +364,18 @@ public class Generateur {
             
             case INF: générerComp(n, "CMPLT"); break;
             case EG: générerComp(n, "CMPEQ"); break;
+            case SUP: 
+                // Pour A > B, on peut générer B < A (INF)
+                // On inverse l'ordre des fils pour utiliser CMPLT
+                if (n.getFils() != null && n.getFils().size() >= 2) {
+                    genererExpression(n.getFils().get(1)); // Fils Droit (b)
+                    genererExpression(n.getFils().get(0)); // Fils Gauche (a)
+                    asm.append("\tPOP(R2)\n");
+                    asm.append("\tPOP(R1)\n");
+                    asm.append("\tCMPLT(R1, R2, R0)\n");
+                    asm.append("\tPUSH(R0)\n");
+                }
+                break;
             // Ajouter les autres comparaisons au besoin
             
             default: break;
