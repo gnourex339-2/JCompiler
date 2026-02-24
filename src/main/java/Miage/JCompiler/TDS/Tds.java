@@ -9,8 +9,17 @@ import java.util.Map;
 
 public class Tds {
     // Une table pour les variables (Nom -> Symbole)
-    // Dans une version avancée, on utiliserait une pile de Maps pour gérer les blocs {} imbriqués.
     private Map<String, Symbole> table = new HashMap<>();
+
+    //méthode pour que le générateur puisse parcourir les globales
+    public Map<String, Symbole> getTable() {
+        return table;
+    }
+
+    // méthode pratique pour ajouter une globale
+    public void ajouterGlobale(String nom, int valeur) {
+        table.put(nom, new Symbole(Cat.GLOBAL, nom, 0, valeur));
+    }
     
     // Contexte actuel pour savoir combien de paramètres a la fonction qu'on traite
     private int nbParamFonctionCourante = 0; 

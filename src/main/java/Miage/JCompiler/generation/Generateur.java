@@ -3,37 +3,39 @@ package Miage.JCompiler.generation;
 import Miage.JCompiler.TDS.Tds;
 import fr.ul.miashs.compil.arbre.*;
 import java.util.List;
-import java.util.HashSet;
+//import java.util.HashSet;
 
 public class Generateur {
 
     private StringBuilder asm;
     private Tds tds;
     private int labelCounter = 0;
-    // Pour éviter de déclarer deux fois la même variable (ex: i = 10; i = 20;)
-    private HashSet<String> globalesDeclarees = new HashSet<>();
+    
 
     public Generateur() {
         this.asm = new StringBuilder();
         this.tds = new Tds();
     }
 
-    public String generer(Noeud arbre) {
-        asm = new StringBuilder();
-        tds = new Tds(); // Reset TDS
-        globalesDeclarees.clear(); //On vide la liste pour repartir à zéro
+    public String generer(Noeud arbre, Tds tdsEntree) {
+        this.asm = new StringBuilder();
+        this.tds = tdsEntree; // <-- On utilise la TDS fournie !
+        this.labelCounter = 0;
         
-        // Init standard Beta
         asm.append(".include beta.uasm\n");
         asm.append(".options tty\n"); 
         asm.append("\tCMOVE(pile, SP)\n");
         asm.append("\tBR(debut)\n\n");
 
-        // 1. Collecte des variables globales
+        // --- VARIABLES GLOBALES (D'après la TDS) ---
         asm.append("| --- VARIABLES GLOBALES ---\n");
         
-        // C'est ici qu'on lance la recherche dans l'arbre
-        collecterGlobales(arbre); // <--- AJOUT : Appel de la méthode
+        // On parcourt la TDS pour déclarer les globales
+        for (Symbole sym : tds.getTable().values()) {
+            if (sym.cat == Cat.GLOBAL && !sym.nom.equals("main")) {
+                asm.append(sym.nom).append(": LONG(").append(sym.valeur).append(")\n");
+            }
+        }
         
         asm.append("\n");
 
@@ -146,72 +148,82 @@ public class Generateur {
     
     // Parcours récursif pour trouver les variables locales (AFF -> IDF)
     private int detecterLocales(Noeud n, int rangActuel) {
-        if (n == null) return rangActuel;
-        
-        if (n.getCat() == Noeud.Categories.AFF) {
-            if (n.getFils() != null && !n.getFils().isEmpty()) {
-                Noeud gauche = n.getFils().get(0);
-                if (gauche.getCat() == Noeud.Categories.IDF) {
-                    String nom = ((Idf)gauche).getValeur().toString();
-                    if (tds.chercher(nom) == null) {
-                        tds.ajouter(nom, Cat.LOCAL, rangActuel);
-                        rangActuel++;
-                    }
+    if (n == null) return rangActuel;
+    
+    if (n.getCat() == Noeud.Categories.AFF) {
+        if (n.getFils() != null && !n.getFils().isEmpty() 
+            && n.getFils().get(0) != null) {  // ← AJOUT
+            
+            Noeud gauche = n.getFils().get(0);
+            if (gauche.getCat() == Noeud.Categories.IDF) {
+                String nom = ((Idf)gauche).getValeur().toString();
+                if (tds.chercher(nom) == null) {
+                    tds.ajouter(nom, Cat.LOCAL, rangActuel);
+                    rangActuel++;
                 }
             }
         }
-        
-        if (n.getFils() != null) {
-            for (Noeud f : n.getFils()) {
+    }
+    
+    if (n.getFils() != null) {
+        for (Noeud f : n.getFils()) {
+            if (f != null) {  // ← AJOUT
                 rangActuel = detecterLocales(f, rangActuel);
             }
         }
-        
-        return rangActuel;
     }
+    
+    return rangActuel;
+}
 
     // --- INSTRUCTIONS ---
 
     private void genererBloc(Bloc b) {
-        if (b.getFils() != null) {
-            for (Noeud fils : b.getFils()) {
+    if (b.getFils() != null) {
+        for (Noeud fils : b.getFils()) {
+            if (fils != null) {  // ← AJOUT
                 genererNoeud(fils);
             }
         }
     }
+}
 
     private void genererAffectation(Affectation a) {
-        asm.append("\t| Affectation\n");
-        
-        if (a.getFils() == null || a.getFils().size() < 2) return;
-        
-        Idf idf = (Idf) a.getFils().get(0);
-        Noeud expression = a.getFils().get(1);
-
-        genererExpression(expression); // Résultat empilé
-
-        Symbole sym = tds.chercher(idf.getValeur().toString());
-        if (sym == null) {
-             // Cas global par défaut
-             sym = new Symbole(Cat.GLOBAL, idf.getValeur().toString(), 0);
-             // On devrait l'ajouter à la section DATA normalement
-        }
-        
-        asm.append("\tPOP(R0)\n");
-
-        if (sym.cat == Cat.GLOBAL) {
-            asm.append("\tST(R0, ").append(sym.nom).append(")\n");
-        } 
-        else if (sym.cat == Cat.LOCAL) {
-            int offset = (1 + sym.rang) * 4;
-            asm.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
-        } 
-        else if (sym.cat == Cat.PARAM) {
-            int nbParam = tds.getNbParamFonctionCourante();
-            int offset = -(2 + nbParam - sym.rang) * 4;
-            asm.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
-        }
+    asm.append("\t| Affectation\n");
+    
+    // Vérifier que les fils existent et ne sont pas null
+    if (a.getFils() == null || a.getFils().size() < 2 
+        || a.getFils().get(0) == null || a.getFils().get(1) == null) {
+        return;
     }
+    
+    Idf idf = (Idf) a.getFils().get(0);
+    Noeud expression = a.getFils().get(1);
+
+    genererExpression(expression); // Résultat empilé
+
+    Symbole sym = tds.chercher(idf.getValeur().toString());
+    if (sym == null) {
+         // Cas global par défaut
+         sym = new Symbole(Cat.GLOBAL, idf.getValeur().toString(), 0);
+         // On devrait l'ajouter à la section DATA normalement
+    }
+    
+    asm.append("\tPOP(R0)\n");
+
+    if (sym.cat == Cat.GLOBAL) {
+        asm.append("\tST(R0, ").append(sym.nom).append(")\n");
+    } 
+    else if (sym.cat == Cat.LOCAL) {
+        int offset = (1 + sym.rang) * 4;
+        asm.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
+    } 
+    else if (sym.cat == Cat.PARAM) {
+        int nbParam = tds.getNbParamFonctionCourante();
+        int offset = -(2 + nbParam - sym.rang) * 4;
+        asm.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
+    }
+}
 
     private void genererSi(Si n) {
         int num = ++labelCounter;
@@ -262,62 +274,39 @@ public class Generateur {
     }
     
     private void genererEcrire(Noeud n) {
-        if (n.getFils() != null && !n.getFils().isEmpty()) {
-            genererExpression(n.getFils().get(0));
-            asm.append("\tPOP(R0)\n");
-            asm.append("\tWRINT()\n"); 
-        }
+    if (n.getFils() != null && !n.getFils().isEmpty() 
+        && n.getFils().get(0) != null) {  
+        genererExpression(n.getFils().get(0));
+        asm.append("\tPOP(R0)\n");
+        asm.append("\tWRINT()\n"); 
     }
+}
 
-    private void collecterGlobales(Noeud n) {
-        if (n == null) return;
-
-        // Si on trouve une affectation (AFF)
-        if (n.getCat() == Noeud.Categories.AFF) {
-            // Vérifier que getFils() n'est pas null ET n'est pas vide
-            if (n.getFils() != null && !n.getFils().isEmpty() 
-                && n.getFils().get(0).getCat() == Noeud.Categories.IDF) {
-                
-                String nomVar = ((Idf)n.getFils().get(0)).getValeur().toString();
-                
-                // Si pas encore déclarée, on l'écrit dans le code assembleur
-                if (!globalesDeclarees.contains(nomVar)) {
-                    asm.append(nomVar).append(": LONG(0)\n");
-                    globalesDeclarees.add(nomVar);
-                    
-                    // On l'ajoute aussi à la TDS comme GLOBAL
-                    tds.ajouter(nomVar, Cat.GLOBAL, 0); 
-                }
-            }
-        }
-        
-        // Parcourir récursivement les fils (avec vérification null)
-        if (n.getFils() != null) {
-            for (Noeud fils : n.getFils()) {
-                collecterGlobales(fils);
-            }
-        }
-    }
 
     // --- EXPRESSIONS ---
 
-    private void genererExpression(Noeud n) {
+private void genererExpression(Noeud n) {
         if (n == null) return;
 
         switch (n.getCat()) {
+            // CAS CONSTANTE
             case CONST:
-                int val = ((Const) n).getValeur();
+                // Attention : Il faut caster vers (Const), pas (NoeudInt)
+                int val = ((Const) n).getValeur(); 
                 asm.append("\tCMOVE(").append(val).append(", R0)\n");
                 asm.append("\tPUSH(R0)\n");
                 break;
 
+            // CAS VARIABLE (LECTURE)
             case IDF:
                 String nom = ((Idf) n).getValeur().toString();
                 Symbole sym = tds.chercher(nom);
+                
+                // Si la variable n'est pas dans la TDS (cas global par défaut)
                 if (sym == null) {
-                     // Défaut Global
-                     asm.append("\tLD(").append(nom).append(", R0)\n");
+                    asm.append("\tLD(").append(nom).append(", R0)\n");
                 } else {
+                    // Logique selon le type
                     if (sym.cat == Cat.GLOBAL) {
                         asm.append("\tLD(").append(sym.nom).append(", R0)\n");
                     } else if (sym.cat == Cat.LOCAL) {
@@ -357,22 +346,69 @@ public class Generateur {
             
             case INF: générerComp(n, "CMPLT"); break;
             case EG: générerComp(n, "CMPEQ"); break;
-            // Ajouter les autres comparaisons au besoin
+
+            // 2. Inférieur ou Egal (<=) : A <= B
+            case INFE: 
+                générerComp(n, "CMPLE"); 
+                break;
+
+            // 4. Supérieur (>) : A > B <=> B < A
+            case SUP: 
+                // On génère les fils normalement
+                genererExpression(n.getFils().get(0)); // Gauche (A)
+                genererExpression(n.getFils().get(1)); // Droite (B)
+                asm.append("\tPOP(R2)\n"); // R2 = B
+                asm.append("\tPOP(R1)\n"); // R1 = A
+                // On inverse les registres dans la comparaison : CMPLT(R2, R1) => B < A
+                asm.append("\tCMPLT(R2, R1, R0)\n"); 
+                asm.append("\tPUSH(R0)\n");
+                break;
+
+            // 5. Supérieur ou Egal (>=) : A >= B <=> B <= A
+            case SUPE: 
+                genererExpression(n.getFils().get(0)); // Gauche (A)
+                genererExpression(n.getFils().get(1)); // Droite (B)
+                asm.append("\tPOP(R2)\n"); // R2 = B
+                asm.append("\tPOP(R1)\n"); // R1 = A
+                // On inverse les registres : CMPLE(R2, R1) => B <= A
+                asm.append("\tCMPLE(R2, R1, R0)\n"); 
+                asm.append("\tPUSH(R0)\n");
+                break;
+
+            // 6. Différent (!=) : !(A == B)
+            case DIF:
+                genererExpression(n.getFils().get(0));
+                genererExpression(n.getFils().get(1));
+                asm.append("\tPOP(R2)\n");
+                asm.append("\tPOP(R1)\n");
+                // On teste l'égalité
+                asm.append("\tCMPEQ(R1, R2, R0)\n"); 
+                // On inverse le résultat (Si R0==0 alors R0=1, sinon R0=0)
+                // R31 vaut toujours 0 en Beta
+                asm.append("\tCMPEQ(R0, R31, R0)\n"); 
+                asm.append("\tPUSH(R0)\n");
+                break;
+                
+            case LIRE:
+            asm.append("\tRDINT()\n"); // Lit un entier tapé au clavier et le met dans R0
+            asm.append("\tPUSH(R0)\n"); // Empile le résultat comme n'importe quelle expression
+            break;
             
             default: break;
         }
     }
     
     private void générerOp(Noeud n, String op) {
-        if (n.getFils() != null && n.getFils().size() >= 2) {
-            genererExpression(n.getFils().get(0));
-            genererExpression(n.getFils().get(1));
-            asm.append("\tPOP(R2)\n");
-            asm.append("\tPOP(R1)\n");
-            asm.append("\t").append(op).append("(R1, R2, R0)\n");
-            asm.append("\tPUSH(R0)\n");
-        }
+    if (n.getFils() != null && n.getFils().size() >= 2
+        && n.getFils().get(0) != null && n.getFils().get(1) != null) {  // ← AJOUT
+        genererExpression(n.getFils().get(0));
+        genererExpression(n.getFils().get(1));
+        asm.append("\tPOP(R2)\n");
+        asm.append("\tPOP(R1)\n");
+        asm.append("\t").append(op).append("(R1, R2, R0)\n");
+        asm.append("\tPUSH(R0)\n");
     }
+}
     
     private void générerComp(Noeud n, String op) {
         générerOp(n, op); 
