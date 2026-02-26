@@ -4,5 +4,5 @@ public enum Cat {
     GLOBAL,
     LOCAL,
     PARAM,
-    FONCTION
+    FONCTION,
 }
