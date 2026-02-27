@@ -11,20 +11,39 @@ public class Generateur {
     private StringBuilder asm;
     private Tds tds;
     private int labelCounter = 0;
-    
+    private boolean besoinIntIO = false;
+
 
     public Generateur() {
         this.asm = new StringBuilder();
         this.tds = new Tds();
+    }
+    private boolean arbreContient(Noeud n, Noeud.Categories cat) {
+        if (n == null) return false;
+        if (n.getCat() == cat) return true;
+        if (n.getFils() != null) {
+            for (Noeud f : n.getFils()) {
+                if (f != null && arbreContient(f, cat)) return true;
+            }
+        }
+        return false;
     }
 
     public String generer(Noeud arbre, Tds tdsEntree) {
         this.asm = new StringBuilder();
         this.tds = tdsEntree; // <-- On utilise la TDS fournie !
         this.labelCounter = 0;
-        
+
+
+        besoinIntIO = arbreContient(arbre, Noeud.Categories.ECR)
+                || arbreContient(arbre, Noeud.Categories.LIRE);
+
+
         asm.append(".include beta.uasm\n");
-        asm.append(".options tty\n"); 
+        if (besoinIntIO) {
+            asm.append(".include intio.uasm\n");
+        }
+        asm.append(".options tty\n");
         asm.append("\tCMOVE(pile, SP)\n");
         asm.append("\tBR(debut)\n\n");
 
@@ -50,7 +69,7 @@ public class Generateur {
 
         // Zone de pile
         asm.append("\n| --- PILE ---\n");
-        asm.append("pile:\n");
+        asm.append("pile: STORAGE(256)\n");
         
         return asm.toString();
     }
@@ -216,7 +235,7 @@ public class Generateur {
         asm.append("\tST(R0, ").append(sym.nom).append(")\n");
     } 
     else if (sym.cat == Cat.LOCAL) {
-        int offset = (1 + sym.rang) * 4;
+        int offset = sym.rang * 4;
         asm.append("\tPUTFRAME(R0, ").append(offset).append(")\n");
     } 
     else if (sym.cat == Cat.PARAM) {
@@ -311,7 +330,7 @@ private void genererExpression(Noeud n) {
                     if (sym.cat == Cat.GLOBAL) {
                         asm.append("\tLD(").append(sym.nom).append(", R0)\n");
                     } else if (sym.cat == Cat.LOCAL) {
-                        int offset = (1 + sym.rang) * 4;
+                        int offset = sym.rang * 4;
                         asm.append("\tGETFRAME(").append(offset).append(", R0)\n");
                     } else if (sym.cat == Cat.PARAM) {
                         int nbParam = tds.getNbParamFonctionCourante();
