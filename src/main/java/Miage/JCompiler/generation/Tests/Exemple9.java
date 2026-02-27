@@ -84,5 +84,6 @@ public class Exemple9 {
         String codeBeta = gen.generer(prog, tds); 
         
         System.out.println(codeBeta);
+        TxtAfficheur.afficher(prog);
     }
 }

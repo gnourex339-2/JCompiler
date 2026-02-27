@@ -1,4 +1,6 @@
-package Miage.JCompiler.generation;
+package Miage.JCompiler.TDS;
+
+import Miage.JCompiler.generation.Cat;
 
 public class Symbole {
     public Cat cat;

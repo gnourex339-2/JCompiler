@@ -56,5 +56,6 @@ public class Exemple7 {
         String codeBeta = gen.generer(prog, tds); 
         
         System.out.println(codeBeta);
+        TxtAfficheur.afficher(prog);
     }
 }

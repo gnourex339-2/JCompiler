@@ -1,5 +1,6 @@
 package Miage.JCompiler.generation;
 
+import Miage.JCompiler.TDS.Symbole;
 import Miage.JCompiler.TDS.Tds;
 import fr.ul.miashs.compil.arbre.*;
 import java.util.List;

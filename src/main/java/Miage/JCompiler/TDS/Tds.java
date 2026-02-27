@@ -2,7 +2,6 @@
 package Miage.JCompiler.TDS;
 
 import Miage.JCompiler.generation.Cat;
-import Miage.JCompiler.generation.Symbole;
 
 import java.util.HashMap;
 import java.util.Map;
