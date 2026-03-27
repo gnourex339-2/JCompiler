@@ -1,3 +1,11 @@
-/target/
-.DS_Store
-.idea
+# Fichiers compilés et dossiers Maven
+target/
+bindist/
+
+# Code Java généré automatiquement par JFlex et CUP 
+src/main/java/generated/
+
+# Fichiers de l'IDE
+.vscode/
+.idea/
+*.iml
