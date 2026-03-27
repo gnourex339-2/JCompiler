@@ -1,0 +1,11 @@
+// Test 8 : Itération (Boucle TantQue)
+
+var i = 0;
+
+principal {
+    i = 0;
+    tantque (i < 6) {
+        ecrire(i);
+        i = i + 1;
+    }
+}

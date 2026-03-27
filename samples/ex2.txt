@@ -1,0 +1,9 @@
+// Test 2 : Variables globales en Jason
+
+var i = 10;
+var j = 20;
+var k = 0;
+var l = 0;
+
+principal {
+}

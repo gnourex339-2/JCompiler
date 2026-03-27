@@ -27,29 +27,40 @@
   ~
   -->
 
+
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>fr.ul.miashs</groupId>
-  <artifactId>JCompiler</artifactId>
-  <version>1.0</version>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.ul.miashs</groupId>
+	<artifactId>JCompiler</artifactId>
+	<version>1.0</version>
+
 	<properties>
 		<!-- Le code source en UTF8 -->
 		<project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
+		
+		<!-- === NOUVELLES PROPRIÉTÉS POUR L'ÉTAPE 2 === -->
+		<!-- Dossier où se trouvent le scanner et le parser (.lex et .cup) -->
+		<project.cuplex.dir>src/main/cuplex</project.cuplex.dir>
+		<!-- Nom du fichier CUP -->
+		<project.cup.filename>Parser.cup</project.cup.filename>
+		<!-- Dossier pour stocker les .java générés par CUP et JFlex -->
+		<project.generated.dir>src/main/java</project.generated.dir>
+
 		<!-- Où stocker la distribution binaire -->
 		<project.bindist.dir>${project.basedir}/bindist</project.bindist.dir>
-		<!-- Nom de la classe principale -->
-		<project.bin.classname>${project.groupId}.${project.artifactId}.arbre.exemples.Exemple1</project.bin.classname>
-		<!-- Nom de la classe principale -->
-		<project.bin.appname>ex1</project.bin.appname>
-		<!-- Nom de la classe principale #2 -->
-		<project.bin2.classname>${project.groupId}.${project.artifactId}.arbre.exemples.Exemple2</project.bin2.classname>
-		<!-- Nom de la classe principale -->
-		<project.bin2.appname>ex2</project.bin2.appname>
+		
+		<!-- === POINT D'ENTRÉE DE VOTRE COMPILATEUR === -->
+		<!-- Nom de la nouvelle classe principale (votre orchestrateur) -->
+		<project.bin.classname>Miage.JCompiler.Main</project.bin.classname>
+		<!-- Nom du script exécutable (.bat et shell) généré -->
+		<project.bin.appname>jasonc</project.bin.appname>
 	</properties>
+
 	<build>
 		<plugins>
+			<!-- 1. COMPILATEUR JAVA -->
 			<plugin>
-				<!-- use java 11 -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.12.1</version>
@@ -57,9 +68,52 @@
 					<release>17</release>
 				</configuration>
 			</plugin>
+
+			<!-- 2. PLUGIN JFLEX (Générateur du Scanner) -->
 			<plugin>
-				<!-- create scripts for apps -->
-				<!-- mvn package | appassembler:assemble -->
+				<groupId>de.jflex</groupId>
+				<artifactId>jflex-maven-plugin</artifactId>
+				<version>1.9.1</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<lexDefinitions>
+						<lexDefinition>${project.cuplex.dir}</lexDefinition>
+					</lexDefinitions>
+					<outputDirectory>${project.generated.dir}</outputDirectory>
+					<verbose>true</verbose>
+				</configuration>
+			</plugin>
+
+			<!-- 3. PLUGIN CUP (Générateur du Parser) -->
+			<plugin>
+				<groupId>com.github.vbmacher</groupId>
+				<artifactId>cup-maven-plugin</artifactId>
+				<version>11b-20160615-3</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<cupDefinition>${project.cuplex.dir}/${project.cup.filename}</cupDefinition>
+							<className>ParserCup</className>
+							<symbolsName>Sym</symbolsName>
+							<outputDirectory>${project.generated.dir}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- 4. CRÉATION DES EXÉCUTABLES (Dossier bindist) -->
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>1.10</version>
@@ -69,10 +123,7 @@
 						<program>
 							<mainClass>${project.bin.classname}</mainClass>
 							<id>${project.bin.appname}</id>
-						</program>						<program>
-						<mainClass>${project.bin2.classname}</mainClass>
-						<id>${project.bin2.appname}</id>
-					</program>
+						</program>
 					</programs>
 				</configuration>
 				<executions>
@@ -84,9 +135,9 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- 5. CRÉATION DU FICHIER ZIP (Pour le rendu final) -->
 			<plugin>
-				<!-- create a distribution archive -->
-				<!-- mvn install ou assembly:single -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.1.0</version>
@@ -108,13 +159,22 @@
 			</plugin>
 		</plugins>
 	</build>
+
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<!-- Librairie JUnit (Tests) -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- NOUVEAU : Librairie CUP (Nécessaire au Parser) -->
+		<dependency>
+			<groupId>com.github.vbmacher</groupId>
+			<artifactId>java-cup-runtime</artifactId>
+			<version>11b</version>
+		</dependency>
+
 	</dependencies>
 </project>

@@ -59,7 +59,7 @@ public class Exemple6 {
         
         Ecrire ecr = new Ecrire();
         
-        // --- L'APPEL ---
+        // ---L'APPEL ---
         Appel appel = new Appel("f"); 
         appel.ajouterUnFils(new Idf("f")); // Fils 0 = nom de la fonction
         appel.ajouterUnFils(new Idf("a")); // Fils 1 = param 1

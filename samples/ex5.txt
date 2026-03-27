@@ -1,0 +1,8 @@
+// Test 5 : Expression directe dans la fonction ecrire
+
+var a = 100;
+var b = 170;
+
+principal {
+    ecrire( (a * 2) + ((b - 5) / 3) );
+}
