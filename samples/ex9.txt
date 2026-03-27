@@ -1,0 +1,14 @@
+// Test 9 : Appels récursifs
+
+fonction f(a) {
+    si (a <= 0) {
+        retourner 0;
+    }
+    // Appel récursif avec soustraction
+    retourner a + f(a - 1);
+}
+
+principal {
+    // Affiche la somme des nombres de 1 à 6 (21)
+    ecrire( f(6) );
+}

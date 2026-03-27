@@ -1,0 +1,13 @@
+// Test 7 : Structure conditionnelle
+
+var a = 1;
+var b = 2;
+var x = 0;
+
+principal {
+    si (a > b) {
+        x = 1000;
+    } sinon {
+        x = 2000;
+    }
+}

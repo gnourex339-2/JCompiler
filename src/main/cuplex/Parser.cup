@@ -1,0 +1,202 @@
+package generated.fr.ul.miashs.compil;
+
+import java_cup.runtime.Symbol;
+import fr.ul.miashs.compil.arbre.*;
+import Miage.JCompiler.TDS.Tds;
+import Miage.JCompiler.generation.Cat;
+import java.util.ArrayList;
+import java.util.List;
+
+parser code {:
+    public Prog res = new Prog();
+    public Tds tds = new Tds();
+    
+    public void syntax_error(Symbol cur_token) {
+        System.err.println("Erreur de syntaxe ligne " + (cur_token.left+1) + 
+                           " (Token: " + cur_token.value + ")");
+    }
+:}
+
+/* --- TERMINAUX --- */
+terminal PRINCIPAL, VAR, SI, SINON, TANTQUE, FONCTION, PROCEDURE, RETOURNER, LIRE, ECRIRE;
+terminal PLUS, MOINS, MUL, DIV, EG, DIF, SUP, INF, SUPE, INFE, AFFECTATION;
+terminal PO, PF, AO, AF, PV, VIRG;
+terminal Integer ENTIER;
+terminal String ID;
+
+/* --- NON-TERMINAUX --- */
+non terminal Prog programme;
+non terminal Object declarations, declaration_globale;
+non terminal Fonction fonction_decl, procedure_decl;
+non terminal List<Noeud> parametres, liste_parametres;
+non terminal List<Noeud> instructions;
+non terminal Noeud instruction, declaration, affectation, alternative, boucle, appel, ecriture, retour;
+non terminal Noeud expression;
+non terminal List<Noeud> args, liste_args;
+
+/* --- PRIORITÉS --- */
+precedence nonassoc EG, DIF, SUP, INF, SUPE, INFE;
+precedence left PLUS, MOINS;
+precedence left MUL, DIV;
+
+start with programme;
+
+/* =======================================================
+   1. STRUCTURE DU PROGRAMME JASON
+   ======================================================= */
+
+programme ::= declarations PRINCIPAL AO instructions:insts AF 
+    {: 
+       Fonction main = new Fonction("main");
+       Bloc b = new Bloc();
+       for(Noeud i : insts) { if(i != null) b.ajouterUnFils(i); }
+       main.ajouterUnFils(b);
+       
+       parser.res.ajouterUnFils(main);
+       RESULT = parser.res; 
+    :}
+    ;
+
+/* NOTRE MODIFICATION : On autorise les déclarations globales ici ! */
+declarations ::= declarations fonction_decl:f 
+      {: parser.res.ajouterUnFils(f); :}
+    | declarations procedure_decl:p 
+      {: parser.res.ajouterUnFils(p); :}
+    | declarations declaration_globale 
+    | /* vide */
+    ;
+
+/* On force l'initialisation par un ENTIER pour faciliter l'ajout en TDS Globale */
+declaration_globale ::= VAR ID:nom AFFECTATION ENTIER:val PV 
+    {: parser.tds.ajouterGlobale(nom, val); RESULT = null; :}
+    ;
+
+/* =======================================================
+   2. FONCTIONS ET PROCÉDURES
+   ======================================================= */
+
+fonction_decl ::= FONCTION ID:nom PO parametres:params PF AO instructions:insts AF
+    {: 
+       parser.tds.ajouter(nom, Cat.FONCTION, 0);
+       Fonction f = new Fonction(nom);
+       for(Noeud p : params) { f.ajouterUnFils(p); }
+       Bloc b = new Bloc();
+       for(Noeud i : insts) { if(i != null) b.ajouterUnFils(i); }
+       f.ajouterUnFils(b);
+       RESULT = f; 
+    :}
+    ;
+
+procedure_decl ::= PROCEDURE ID:nom PO parametres:params PF AO instructions:insts AF
+    {: 
+       parser.tds.ajouter(nom, Cat.FONCTION, 0); // Traitée comme une fonction sans retour
+       Fonction f = new Fonction(nom);
+       for(Noeud p : params) { f.ajouterUnFils(p); }
+       Bloc b = new Bloc();
+       for(Noeud i : insts) { if(i != null) b.ajouterUnFils(i); }
+       f.ajouterUnFils(b);
+       RESULT = f; 
+    :}
+    ;
+
+parametres ::= liste_parametres:lp {: RESULT = lp; :}
+    | /* vide */                   {: RESULT = new ArrayList<Noeud>(); :}
+    ;
+
+liste_parametres ::= liste_parametres:lp VIRG ID:nom 
+      {: lp.add(new Idf(nom)); RESULT = lp; :}
+    | ID:nom 
+      {: List<Noeud> l = new ArrayList<>(); l.add(new Idf(nom)); RESULT = l; :}
+    ;
+
+/* =======================================================
+   3. INSTRUCTIONS (Le corps des blocs)
+   ======================================================= */
+
+instructions ::= instructions:liste instruction:i 
+      {: if(i != null) liste.add(i); RESULT = liste; :}
+    | /* vide */ 
+      {: RESULT = new ArrayList<Noeud>(); :}
+    ;
+
+/* Dispatching des instructions selon la BNF de Jason */
+instruction ::= declaration:d {: RESULT = d; :}
+              | affectation:a {: RESULT = a; :}
+              | alternative:a {: RESULT = a; :}
+              | boucle:b      {: RESULT = b; :}
+              | appel:a PV    {: RESULT = a; :} /* Appel en tant quinstruction (ex: procedure) */
+              | ecriture:e    {: RESULT = e; :}
+              | retour:r      {: RESULT = r; :}
+              ;
+
+declaration ::= VAR ID:nom AFFECTATION expression:e PV 
+    {: Affectation a = new Affectation(); a.setFilsGauche(new Idf(nom)); a.setFilsDroit(e); RESULT = a; :}
+    ;
+
+affectation ::= ID:nom AFFECTATION expression:e PV 
+    {: Affectation a = new Affectation(); a.setFilsGauche(new Idf(nom)); a.setFilsDroit(e); RESULT = a; :}
+    ;
+
+alternative ::= SI PO expression:c PF AO instructions:alors AF SINON AO instructions:sinon AF
+    {: Si s = new Si(); s.setCondition(c);
+       Bloc bAlors = new Bloc(); for(Noeud n : alors) if(n!=null) bAlors.ajouterUnFils(n);
+       Bloc bSinon = new Bloc(); for(Noeud n : sinon) if(n!=null) bSinon.ajouterUnFils(n);
+       s.setBlocAlors(bAlors); s.setBlocSinon(bSinon); RESULT = s; :}
+    | SI PO expression:c PF AO instructions:alors AF
+    {: Si s = new Si(); s.setCondition(c);
+       Bloc bAlors = new Bloc(); for(Noeud n : alors) if(n!=null) bAlors.ajouterUnFils(n);
+       s.setBlocAlors(bAlors); RESULT = s; :}
+    ;
+
+boucle ::= TANTQUE PO expression:c PF AO instructions:insts AF
+    {: TantQue tq = new TantQue(); tq.setCondition(c);
+       Bloc b = new Bloc(); for(Noeud n : insts) if(n!=null) b.ajouterUnFils(n);
+       tq.setBloc(b); RESULT = tq; :}
+    ;
+
+ecriture ::= ECRIRE PO expression:e PF PV 
+    {: Ecrire ecr = new Ecrire(); ecr.ajouterUnFils(e); RESULT = ecr; :}
+    ;
+
+retour ::= RETOURNER expression:e PV 
+    {: Retour ret = new Retour(""); ret.getFils().set(0, e); RESULT = ret; :}
+    ;
+
+/* =======================================================
+   4. EXPRESSIONS & APPELS
+   ======================================================= */
+
+expression ::= expression:g PLUS expression:d  {: Plus p = new Plus(); p.setFilsGauche(g); p.setFilsDroit(d); RESULT = p; :}
+    | expression:g MOINS expression:d          {: Moins m = new Moins(); m.setFilsGauche(g); m.setFilsDroit(d); RESULT = m; :}
+    | expression:g MUL expression:d            {: Multiplication m = new Multiplication(); m.setFilsGauche(g); m.setFilsDroit(d); RESULT = m; :}
+    | expression:g DIV expression:d            {: Division div = new Division(); div.setFilsGauche(g); div.setFilsDroit(d); RESULT = div; :}
+    | expression:g EG expression:d             {: Egal c = new Egal(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | expression:g DIF expression:d            {: Different c = new Different(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | expression:g SUP expression:d            {: Superieur c = new Superieur(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | expression:g INF expression:d            {: Inferieur c = new Inferieur(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | expression:g SUPE expression:d           {: SuperieurEgal c = new SuperieurEgal(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | expression:g INFE expression:d           {: InferieurEgal c = new InferieurEgal(); c.setFilsGauche(g); c.setFilsDroit(d); RESULT = c; :}
+    | PO expression:e PF                       {: RESULT = e; :}
+    | ENTIER:n                                 {: RESULT = new Const(n); :}
+    | ID:nom                                   {: RESULT = new Idf(nom); :}
+    | LIRE PO PF                               {: RESULT = new Lire(); :}
+    | appel:a                                  {: RESULT = a; :}
+    ;
+
+appel ::= ID:nom PO args:a PF 
+    {: Appel app = new Appel(nom); 
+       app.ajouterUnFils(new Idf(nom));
+       for(Noeud arg : a) { app.ajouterUnFils(arg); }
+       RESULT = app; 
+    :}
+    ;
+
+args ::= liste_args:la {: RESULT = la; :}
+    | /* vide */       {: RESULT = new ArrayList<Noeud>(); :}
+    ;
+
+liste_args ::= liste_args:la VIRG expression:e 
+      {: la.add(e); RESULT = la; :}
+    | expression:e 
+      {: List<Noeud> l = new ArrayList<>(); l.add(e); RESULT = l; :}
+    ;

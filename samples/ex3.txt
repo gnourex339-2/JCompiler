@@ -1,0 +1,9 @@
+// Test 3 : Expressions mathématiques
+
+var x = 0;
+var a = 100;
+var b = 170;
+
+principal {
+    x = (a * 2) + ((3 - b) / 5);
+}

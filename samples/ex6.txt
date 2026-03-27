@@ -1,0 +1,13 @@
+// Test 6 : Fonctions, paramètres et variables locales
+
+fonction f(a, b) {
+    var res = (a * 2) + ((b - 5) / 3);
+    retourner res;
+}
+
+var a = 100;
+var c = 170;
+
+principal {
+    ecrire( f(a, c) );
+}

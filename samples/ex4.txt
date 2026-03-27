@@ -1,0 +1,8 @@
+// Test 4 : Entrées et sorties (avec affectation)
+
+var res = 0;
+
+principal {
+    res = (lire() * 2) + ((lire() - 3) / 5);
+    ecrire(res);
+}
