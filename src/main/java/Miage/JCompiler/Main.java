@@ -42,8 +42,12 @@ public class Main {
             
             System.out.println("[OK] Analyse lexicale et syntaxique réussie !");
             System.out.println("[OK] Arbre abstrait et TDS construits.\n");
+
+            // Afficher la TDS
+            System.out.println(parser.tds.toString());
+            System.out.println();
             
-            // (Optionnel) Afficher l'arbre pour vérifier visuellement
+            // Afficher l'arbre 
             System.out.println("--- ARBRE ABSTRAIT ---");
             TxtAfficheur.afficher(parser.res);
             System.out.println("----------------------\n");

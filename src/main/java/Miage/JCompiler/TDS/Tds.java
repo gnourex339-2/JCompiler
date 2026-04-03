@@ -44,4 +44,19 @@ public class Tds {
     public void nettoyerLocales() {
         table.entrySet().removeIf(entry -> entry.getValue().cat != Cat.GLOBAL);
     }
+    // Méthode pour afficher la TDS 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- TABLE DES SYMBOLES (TDS) ---\n");
+        if (table.isEmpty()) {
+            sb.append("(TDS vide)\n");
+        } else {
+            for (Symbole sym : table.values()) {
+                sb.append(sym.toString()).append("\n");
+            }
+        }
+        sb.append("--------------------------------");
+        return sb.toString();
+    }
 }

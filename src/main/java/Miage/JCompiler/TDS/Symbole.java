@@ -20,4 +20,15 @@ public class Symbole {
         this.rang = rang;
         this.valeur = valeur;
     }
+    //
+    @Override
+    public String toString() {
+        // Affichage différent selon si c'est une globale (qui a une valeur) ou autre chose (qui a un rang)
+        if (this.cat == Cat.GLOBAL) {
+            return String.format("{ nom = %-10s | cat = %-10s | val = %d }", nom, cat, valeur);
+        } else {
+            return String.format("{ nom = %-10s | cat = %-10s | rang = %d }", nom, cat, rang);
+        }
+    }
 }
+
