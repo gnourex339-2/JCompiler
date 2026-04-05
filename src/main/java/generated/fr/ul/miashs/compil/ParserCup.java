@@ -8,6 +8,7 @@ package generated.fr.ul.miashs.compil;
 import java_cup.runtime.Symbol;
 import fr.ul.miashs.compil.arbre.*;
 import Miage.JCompiler.TDS.Tds;
+import Miage.JCompiler.TDS.Symbole;
 import Miage.JCompiler.generation.Cat;
 import java.util.ArrayList;
 import java.util.List;
@@ -425,7 +426,9 @@ class CUP$ParserCup$actions {
 		int instsright = ((java_cup.runtime.Symbol)CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).right;
 		List<Noeud> insts = (List<Noeud>)((java_cup.runtime.Symbol) CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).value;
 		 
-       parser.tds.ajouter(nom, Cat.FONCTION, 0);
+       // MODIFICATION ICI : On stocke le nombre de paramètres dans le rang !
+       parser.tds.ajouter(nom, Cat.FONCTION, params.size());
+       
        Fonction f = new Fonction(nom);
        for(Noeud p : params) { f.ajouterUnFils(p); }
        Bloc b = new Bloc();
@@ -451,7 +454,9 @@ class CUP$ParserCup$actions {
 		int instsright = ((java_cup.runtime.Symbol)CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).right;
 		List<Noeud> insts = (List<Noeud>)((java_cup.runtime.Symbol) CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).value;
 		 
-       parser.tds.ajouter(nom, Cat.FONCTION, 0); // Traitée comme une fonction sans retour
+       // MODIFICATION ICI : On stocke le nombre de paramètres dans le rang !
+       parser.tds.ajouter(nom, Cat.FONCTION, params.size());
+       
        Fonction f = new Fonction(nom);
        for(Noeud p : params) { f.ajouterUnFils(p); }
        Bloc b = new Bloc();
@@ -945,7 +950,25 @@ class CUP$ParserCup$actions {
 		int aleft = ((java_cup.runtime.Symbol)CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).left;
 		int aright = ((java_cup.runtime.Symbol)CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).right;
 		List<Noeud> a = (List<Noeud>)((java_cup.runtime.Symbol) CUP$ParserCup$stack.elementAt(CUP$ParserCup$top-1)).value;
-		 Appel app = new Appel(nom); 
+		 
+       
+       //On cherche le nom dans la TDS
+       Symbole sym = parser.tds.chercher(nom);
+       
+       //On vérifie si la fonction existe
+       if (sym == null) {
+           throw new Exception("Erreur Sémantique : La fonction '" + nom + "' n'est pas déclarée !");
+       } 
+       //On vérifie si cest bien une fonction (et pas une variable)
+       else if (sym.cat != Cat.FONCTION) {
+           throw new Exception("Erreur Sémantique : '" + nom + "' n'est pas une fonction !");
+       } 
+       //On vérifie le nombre darguments
+       else if (sym.rang != a.size()) {
+           throw new Exception("Erreur Sémantique : La fonction '" + nom + "' attend " + sym.rang + " argument(s), mais " + a.size() + " ont été fournis !");
+       }
+
+       Appel app = new Appel(nom); 
        app.ajouterUnFils(new Idf(nom));
        for(Noeud arg : a) { app.ajouterUnFils(arg); }
        RESULT = app; 

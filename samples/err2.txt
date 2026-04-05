@@ -1,0 +1,4 @@
+principal {
+    var x = 10    // <-- Oubli du point-virgule ici !
+    ecrire(x);
+}

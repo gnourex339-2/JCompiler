@@ -1,0 +1,6 @@
+principal {
+    var a = 5;
+    si a > 0 {    // <-- Il manque les ( ) autour de a > 0 !
+        ecrire(a);
+    }
+}

@@ -1,0 +1,7 @@
+var compteur;  // <-- Erreur : pas de "= valeur" !
+
+principal {
+    compteur = 1;
+}
+
+//la règle c'est VAR ID AFFECTATION ENTIER PV

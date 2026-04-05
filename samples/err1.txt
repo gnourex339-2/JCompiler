@@ -1,0 +1,4 @@
+principal {
+    var prix = 100 $; // Le symbole $ n'existe pas en Jason !
+    ecrire(prix);
+}
