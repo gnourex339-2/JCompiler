@@ -2,78 +2,92 @@
 
 ## Description
 
-Ce projet contient un package JAVA de gestion d'arbres n-aire 
-adaptés à la représentation de la structure de données arbre abstrait
-du projet de réalisation d'un compilateur dans le cadre du cours de Compilation
+Ce projet a consisté en la réalisation d'un compilateur dans le cadre du cours de Compilation
 en Licence MIASHS parcours MIAGE et TAL à l'Université de Lorraine
 
-## Capture d'écran
-```
-% ./tester 4
-SI/1
-└─INF
-  └─IDF/j
-  └─IDF/k
-└─BLOC
-  └─AFF
-    └─IDF/i
-    └─CONST/10
-└─BLOC
-```
 
-## Utilisation
 
-Voici un exemple de code en Java qui crée un arbre abstrait et qui l'affiche à la suite
-
-```java
-Idf idf41 = new Idf("j");
-Idf idf42 = new Idf("k");
-Inferieur inf4 = new Inferieur();
-inf4.setFilsGauche(idf41);
-inf4.setFilsDroit(idf42);
-Idf idf43 = new Idf("i");
-Const const41 = new Const(10);
-Affectation aff41 = new Affectation();
-aff41.setFilsGauche(idf43);
-aff41.setFilsDroit(const41);
-Bloc bloc4 = new Bloc();
-bloc4.ajouterUnFils(aff41);
-Si si4 = new Si(1);
-si4.setCondition(inf4);
-si4.setBlocAlors(bloc4);
-TxtAfficheur.afficher(si4);
-```
-
-##Diagramme des classes
-
-![](arbre.png)
 
 ## Prérequis
 
-Utiliser un IDE qui intègre Maven (par exemple Eclipse)
+Utiliser un IDE qui intègre Maven (par exemple VS Code, IntelliJ ou Eclipse)
 
-## Installation
 
-1. Télécharger la distribution .zip depuis le [gitlab de l'Université de Lorraine](https://gitlab.univ-lorraine.fr/roussana5/arbre)
-2. Décompresser dans un dossier
-3. Importer le projet dans votre IDE (pour Eclipse : `File>Import...>Existing Maven Project...`
-4. Installer dans le repository local (pour Eclipse: `Run As...>Maven Install`
 
-## Utilisation
+## Lancer le compilateur
 
-Dans un projet Maven, ajouter la dépendance suivante dans le fichier `pom.xml` :
+Pour tester le compilateur sur votre machine, suivez simplement ces deux étapes dans le terminal (VS Code, IntelliJ ou Eclipse), à la racine du projet.
 
+---
+
+### Étape 1 : Générer et compiler
+
+Comme **JFlex** et **CUP** génèrent les fichiers `Scanner.java` et `ParserCup.java`, il suffit de lancer la commande Maven suivante :
+
+```bash
+mvn clean package
 ```
-		<dependency>
-			<groupId>fr.ul.miage</groupId>
-			<artifactId>arbre</artifactId>
-			<version>0.0.7</version>
-		</dependency>
 
+Cette commande :
+- nettoie le projet
+- lit la grammaire
+- génère le code Java manquant
+- compile l’ensemble
+- crée l’exécutable dans le dossier `bindist/`
+
+---
+
+### Étape 2 : Exécuter le compilateur
+
+Une fois le projet compilé, vous pouvez tester les fichiers d’exemple présents dans le dossier `samples/`.
+
+Ces fichiers contiennent du code écrit dans le langage **"Jason"** que nous avons créé.
+
+---
+
+#### Sous Windows
+
+Exemple avec le fichier `ex6.txt` (fonctions) :
+
+```bash
+bindist\bin\jasonc.bat samples\ex6.txt
 ```
-##Auteur
 
-Azim Roussanaly (IDMC/Université de Lorraine)
+---
+
+#### Sous Mac / Linux
+
+```bash
+./bindist/bin/jasonc samples/e6.exp
+```
+
+Si vous obtenez une erreur **"permission denied"**, exécutez d'abord :
+
+```bash
+chmod +x bindist/bin/jasonc
+```
+
+---
+
+### Résultat attendu
+
+Après exécution, vous devriez voir :
+- l’**Arbre Syntaxique Abstrait (AST)** s’afficher dans la console
+- suivi du **code Assembleur Beta**
+
+---
+
+### Tester d'autres fichiers
+
+Vous pouvez remplacer `ex6.txt` par n'importe quel autre fichier de test :
+
+- `e1.exp`
+- `e9.exp`
+- etc.
+
+## Projet Universitaire
+
+(IDMC/Université de Lorraine)
 
 ##Licence
 
