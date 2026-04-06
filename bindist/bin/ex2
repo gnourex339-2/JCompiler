@@ -97,7 +97,7 @@ then
   REPO="$BASEDIR"/repo
 fi
 
-CLASSPATH="$BASEDIR"/etc:"$REPO"/fr/ul/miashs/compil/1.0/compil-1.0.jar
+CLASSPATH="$BASEDIR"/etc:"$REPO"/fr/ul/miashs/JCompiler/1.0/JCompiler-1.0.jar
 
 ENDORSED_DIR=
 if [ -n "$ENDORSED_DIR" ] ; then
@@ -124,5 +124,5 @@ exec "$JAVACMD" $JAVA_OPTS  \
   -Dapp.repo="$REPO" \
   -Dapp.home="$BASEDIR" \
   -Dbasedir="$BASEDIR" \
-  fr.ul.miashs.compil.arbre.exemples.Exemple2 \
+  fr.ul.miashs.JCompiler.arbre.exemples.Exemple2 \
   "$@"

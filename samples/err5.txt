@@ -1,5 +1,5 @@
 var x = 5;
-var y = 10; // <-- Erreur : "var2" n'est pas déclaré avec "var" !
+var y = 10;
 
 fonction addition(a, b) {
     retourner a + b;
@@ -7,7 +7,6 @@ fonction addition(a, b) {
 
 
 principal {
-    
     var resultat = addition(x);
     ecrire(resultat);
 }
